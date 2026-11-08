@@ -21,8 +21,28 @@ jobs:
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
+      # The repository is docs-only until the SPEC-001 scaffold lands. Type
+      # checking and tests have nothing to point at before then, so they are
+      # skipped with a visible notice rather than failed — a red default branch
+      # that means "no code yet" teaches a reader the wrong thing. This step
+      # becomes a no-op the moment src/ and tests/ exist; delete it then.
+      - name: Detect implementation
+        id: detect
+        run: |
+          if [ -d src ] && [ -d tests ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pre-implementation::No src/ or tests/ yet. Lint and format ran; mypy and pytest were skipped."
+          fi
+
       - name: Sync environment
+        if: steps.detect.outputs.present == 'true'
         run: uv sync --frozen
+
+      - name: Sync environment (tools only)
+        if: steps.detect.outputs.present != 'true'
+        run: uv sync --frozen --no-install-project
 
       - name: Lint
         run: uv run ruff check .
@@ -31,10 +51,12 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Types
+        if: steps.detect.outputs.present == 'true'
         run: uv run mypy src/
 
       # Layers 3-4 are deliberately excluded. A model provider changing
       # behaviour overnight is not a reason to block an unrelated PR.
       # See docs/documentation/development-standards.md.
       - name: Tests (layers 0-2)
+        if: steps.detect.outputs.present == 'true'
         run: uv run pytest -m "not cassette and not eval" --cov

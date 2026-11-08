@@ -1,11 +1,16 @@
 # yardmaster
 
 A control plane for running a fleet of coding agents against a GitHub repository.
+The repository is named for what it demonstrates; `yardmaster` is the tool inside it.
 
 > **Status: pre-implementation.** The architecture, decision records, and the first spec are
 > written; no source code exists yet. This repository follows a spec-first workflow, so the
 > documents come first by design rather than by accident. Start with
 > [docs/specs/plans/ROADMAP.md](docs/specs/plans/ROADMAP.md).
+>
+> CI reflects that honestly: lint and formatting run, while type checking and the test
+> layers are skipped with a notice until `src/` and `tests/` exist. A green check here
+> means "nothing to check yet," not "the suite passed."
 
 ## The argument
 

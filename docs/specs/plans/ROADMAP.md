@@ -134,10 +134,14 @@ real pull requests, real costs — is the evidence.
 - Dogfooding begins at phase 5 and compounds: by phase 10 the repository's own pull request
   history is the demonstration.
 
+## Settled
+
+- **Naming.** The repository is `multi-agent-orchestration-demo`, which says what a reader
+  will find. The Python package stays `yardmaster`, the rail-yard metaphor the merge train
+  already borrows. Repository names describe the subject; package names name the tool.
+
 ## Open questions
 
-- Repository name. `yardmaster` is a placeholder chosen for the rail-yard metaphor that the
-  merge train already borrows. Renaming before the first public push is a single `sed`.
 - Whether phase 5 dogfoods against `coffey.codes` directly or against a scratch repository
   first. Recommendation: a scratch repository for the first live lease, then `coffey.codes`.
 - Whether the review node (phase 6) uses a different model tier than triage. Likely yes;

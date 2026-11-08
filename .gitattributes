@@ -1,0 +1,4 @@
+# Normalize everything to LF in the repository. CI runs bash on Linux, and a
+# CRLF inside a workflow `run:` block or a shell script fails there in ways the
+# error message does not explain. Contributors on Windows get CRLF locally.
+* text=auto eol=lf
