@@ -1,0 +1,109 @@
+[project]
+name = "yardmaster"
+version = "0.0.0"
+description = "A control plane for running a fleet of coding agents against a GitHub repository."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Anthony Coffey" }]
+
+# Exact pins are produced by `uv lock` in the SPEC-001 scaffold commit.
+# ADR-002 requires LangGraph to be pinned exactly once resolved; treat a bump
+# as a `chore` with the full suite as the gate.
+dependencies = [
+  "langgraph",
+  "pydantic>=2",
+  "pydantic-settings",
+  "anthropic",
+  "typer",
+  "httpx",
+  "structlog",
+  "opentelemetry-api",
+  "opentelemetry-sdk",
+]
+
+[project.scripts]
+yardmaster = "yardmaster.cli:app"
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "pytest-asyncio",
+  "hypothesis",
+  "pytest-recording",
+  "ruff",
+  "mypy",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yardmaster"]
+
+# ---------------------------------------------------------------------------
+# Tests — the five layers from docs/documentation/development-standards.md.
+# Layers 0-2 (unit, harness, contract) are the PR gate. Layers 3-4 are not.
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config -q"
+asyncio_mode = "auto"
+markers = [
+  "unit: layer 0 — pure logic, no graph, no model, no I/O",
+  "harness: layer 1 — whole-graph runs against the scripted provider",
+  "contract: layer 2 — schema contracts, golden files, adapter parity, resume",
+  "cassette: layer 3 — recorded real API interactions; nightly only",
+  "eval: layer 4 — graded scenarios scored against a rubric; scheduled only",
+]
+
+[tool.coverage.run]
+source = ["src/yardmaster"]
+omit = ["src/yardmaster/gateways/github.py", "src/yardmaster/providers/anthropic.py"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+# ---------------------------------------------------------------------------
+# Lint / format
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E", "F", "W",      # pycodestyle, pyflakes
+  "I",                # import sorting
+  "N",                # naming
+  "UP",               # pyupgrade
+  "B",                # bugbear
+  "A",                # builtin shadowing
+  "C4",               # comprehensions
+  "DTZ",              # naive datetimes — time must be injected and aware
+  "T20",              # no print(); events go through obs/events.py
+  "RET", "SIM", "PTH",
+  "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]
+
+# ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+files = ["src"]
+strict = true
+warn_unreachable = true
+disallow_any_explicit = false   # allowed with a comment explaining why
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false

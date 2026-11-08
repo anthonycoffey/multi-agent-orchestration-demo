@@ -1,0 +1,38 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Runtime artifacts
+*.log
+runs/
+.yardmaster/
+
+# Credentials — never commit, in any form
+*.pem
+*.p12
+*-service-account*.json
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Claude Code
+.claude/worktrees/*
+.claude/settings.local.json

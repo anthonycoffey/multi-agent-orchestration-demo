@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Lint, types, layers 0-2
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The official installer avoids pinning a setup-action major version.
+      # Swap for astral-sh/setup-uv if you prefer the action's caching.
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Sync environment
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Types
+        run: uv run mypy src/
+
+      # Layers 3-4 are deliberately excluded. A model provider changing
+      # behaviour overnight is not a reason to block an unrelated PR.
+      # See docs/documentation/development-standards.md.
+      - name: Tests (layers 0-2)
+        run: uv run pytest -m "not cassette and not eval" --cov
